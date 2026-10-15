@@ -1,0 +1,6 @@
+{
+  "name": "SG Bus Arrival & Real-Time LTA Tracker",
+  "description": "Singapore LTA real-time bus arrivals, live vehicle tracking radar, wait time predictions, and stop explorer.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

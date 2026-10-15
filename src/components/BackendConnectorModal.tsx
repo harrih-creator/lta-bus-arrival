@@ -46,23 +46,45 @@ export const BackendConnectorModal: React.FC<BackendConnectorModalProps> = ({
     setTestMessage('Connecting to backend endpoint...');
 
     try {
-      const url = `${backendUrl.trim().replace(/\/$/, '')}/api/bus-arrivals?BusStopCode=08057`;
+      const url = `${backendUrl.trim().replace(/\/$/, '')}/api/busarrival?BusStopCode=83139`;
       const headers: Record<string, string> = { Accept: 'application/json' };
       if (apiKey.trim()) {
         headers['AccountKey'] = apiKey.trim();
       }
 
       const res = await fetch(url, { headers });
+      const data = await res.json().catch(() => null);
+
       if (res.ok) {
         setTestStatus('success');
-        setTestMessage('Successfully connected to backend! Valid LTA arrival payload received.');
+        setTestMessage(`Successfully connected to LTA DataMall v3! Stop 83139 returned ${data?.Services?.length || 0} services.`);
       } else {
         setTestStatus('error');
-        setTestMessage(`Backend returned HTTP status ${res.status}: ${res.statusText}`);
+        setTestMessage(`Status ${res.status}: ${data?.message || data?.error || res.statusText}`);
       }
     } catch (err: any) {
       setTestStatus('error');
       setTestMessage(`Connection failed: ${err.message || 'Network error or CORS restriction'}`);
+    }
+  };
+
+  const handleTestHealth = async () => {
+    setTestStatus('testing');
+    setTestMessage('Checking /api/health...');
+    try {
+      const url = `${backendUrl.trim().replace(/\/$/, '')}/api/health`;
+      const res = await fetch(url);
+      const data = await res.json().catch(() => null);
+      if (res.ok) {
+        setTestStatus('success');
+        setTestMessage(`Health check OK! Key configured: ${data?.ltaKeyConfigured ? 'Yes (Live LTA Active)' : 'No (Key required in LTA_ACCOUNT_KEY)'}`);
+      } else {
+        setTestStatus('error');
+        setTestMessage(`Health check failed with status ${res.status}`);
+      }
+    } catch (err: any) {
+      setTestStatus('error');
+      setTestMessage(`Health check error: ${err.message}`);
     }
   };
 
@@ -138,13 +160,13 @@ export const BackendConnectorModal: React.FC<BackendConnectorModalProps> = ({
                 />
               </div>
               <span className="text-[11px] text-slate-500 mt-1 block">
-                Frontend calls: <code className="text-blue-400">{backendUrl || 'URL'}/api/bus-arrivals?BusStopCode=...</code>
+                Serverless endpoints: <code className="text-blue-400">/api/busarrival?BusStopCode=83139</code> and <code className="text-emerald-400">/api/health</code>
               </span>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                LTA DataMall AccountKey (Optional)
+                LTA DataMall AccountKey (Optional override)
               </label>
               <div className="relative">
                 <Key className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -152,23 +174,36 @@ export const BackendConnectorModal: React.FC<BackendConnectorModalProps> = ({
                   type="password"
                   value={apiKey}
                   onChange={e => setApiKey(e.target.value)}
-                  placeholder="Optional header pass-through token"
+                  placeholder="Set LTA_ACCOUNT_KEY in .env or provide here"
                   className="w-full pl-9 pr-3 py-2 bg-slate-950/70 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
+              <span className="text-[10px] text-slate-500 mt-1 block">
+                Tip: If left blank, the server will read <code className="text-slate-400">process.env.LTA_ACCOUNT_KEY</code>.
+              </span>
             </div>
           </div>
 
-          {/* Test Connection Button & Status */}
-          <div className="pt-2">
-            <button
-              onClick={handleTestBackend}
-              disabled={testStatus === 'testing'}
-              className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-            >
-              <Play className="w-3.5 h-3.5 text-blue-400" />
-              <span>{testStatus === 'testing' ? 'Testing Connection...' : 'Test Connection (Bus Stop 08057)'}</span>
-            </button>
+          {/* Test Buttons & Status */}
+          <div className="pt-2 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleTestHealth}
+                disabled={testStatus === 'testing'}
+                className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                <span>Check /api/health</span>
+              </button>
+
+              <button
+                onClick={handleTestBackend}
+                disabled={testStatus === 'testing'}
+                className="py-2.5 px-3 rounded-xl bg-blue-600/90 hover:bg-blue-600 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 shadow-sm shadow-blue-500/20"
+              >
+                <Play className="w-3.5 h-3.5" />
+                <span>Test Stop 83139</span>
+              </button>
+            </div>
 
             {testStatus === 'success' && (
               <div className="mt-2.5 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-400">

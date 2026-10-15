@@ -242,7 +242,16 @@ export const SINGAPORE_BUS_STOPS: BusStop[] = [
     Services: ['39', '85', '103', '171', '800', '804', '806', '811', '812', '851', '852', '853', '854', '855', '857', '859']
   },
 
-  // --- East / Tampines / Bedok / Changi Airport ---
+  // --- East / Tampines / Bedok / Marine Parade / Changi Airport ---
+  {
+    BusStopCode: '83139',
+    RoadName: 'Marine Parade Rd',
+    Description: 'Opp Parkway Parade',
+    Latitude: 1.3015,
+    Longitude: 103.9052,
+    Region: 'East',
+    Services: ['15', '31', '36', '43', '48', '134', '135', '196', '197', '966']
+  },
   {
     BusStopCode: '75009',
     RoadName: 'Tampines Ave 7',
